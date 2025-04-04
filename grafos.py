@@ -1,6 +1,7 @@
 import numpy as np
 
 class Grafo:
+    
     def __init__(self, n):
         self.n = n  # Número de vértices
         self.INF = float('inf')
@@ -18,22 +19,80 @@ class Grafo:
             self.arcos += 1  # Incrementa arcos para grafos direcionados
 
 
-def ler_grafo_input():
-    n = int(input("Digite o número de vértices: "))  # Lê a quantidade de vértices
-    grafo = Grafo(n)
 
-    m = int(input("Digite o número de arestas/arcos: "))  # Lê a quantidade de arestas ou arcos
+def ler_arquivo(caminho_arquivo):
+    with open(caminho_arquivo, "r", encoding="utf-8") as arquivo:
+        linhas = arquivo.readlines()
 
-    print("Digite as arestas/arcos no formato: u v peso bidirecional (1 para sim, 0 para não)")
-    for _ in range(m):
-        u, v, peso, bidirecional = map(int, input().split())
-        grafo.adicionar_aresta(u, v, peso, bidirecional == 1)
+    vertices = set()
+    arestas = set()
+    arcos = set()
+    vertices_requeridos = set()
+    arestas_requeridas = set()
+    arcos_requeridos = set()
+    secao_atual = None
 
-    return grafo
+    for linha in linhas:
+        linha = linha.strip()
+
+        # Identifica a seção atual com base no prefixo
+        if linha.startswith("ReN."):
+            secao_atual = "ReN"
+            continue
+        elif linha.startswith("ReE."):
+            secao_atual = "ReE"
+            continue
+        elif linha.startswith("EDGE"):
+            secao_atual = "EDGE"
+            continue
+        elif linha.startswith("ReA."):
+            secao_atual = "ReA"
+            continue
+        elif linha.startswith("ARC"):
+            secao_atual = "ARC"
+            continue
+
+        if linha and secao_atual:
+            partes = linha.split("\t")
+            try:
+                if secao_atual == "ReN":
+                    vertice = int(partes[0].replace("N", ""))
+                    demanda = int(partes[1])
+                    custo_servico = int(partes[2])
+                    vertices_requeridos.add((vertice, (demanda, custo_servico)))
+                    vertices.add(vertice)
+
+                elif secao_atual in ["ReE", "EDGE"]:
+                    origem, destino = int(partes[1]), int(partes[2])
+                    vertices.update([origem, destino])
+                    aresta = (min(origem, destino), max(origem, destino))
+                    custo_transporte = int(partes[3])
+                    arestas.add((aresta, custo_transporte))
+
+                    if secao_atual == "ReE":
+                        demanda = int(partes[4])
+                        custo_servico = int(partes[5])
+                        arestas_requeridas.add((aresta, (custo_transporte, demanda, custo_servico)))
+
+                elif secao_atual in ["ReA", "ARC"]:
+                    origem, destino = int(partes[0]), int(partes[1])
+                    vertices.update([origem, destino])
+                    arco = (origem, destino)
+                    custo_transporte = int(partes[3])
+                    arcos.add((arco, custo_transporte))
+
+                    if secao_atual == "ReA":
+                        demanda = int(partes[4])
+                        custo_servico = int(partes[5])
+                        arcos_requeridos.add((arco, (custo_transporte, demanda, custo_servico)))
+            except ValueError:
+                continue
+
+    return vertices, arestas, arcos, vertices_requeridos, arestas_requeridas, arcos_requeridos
 
 
 def qtd_vertices(grafo):
-    return grafo.n
+    return len(grafo)
 
 
 def qtd_arestas(grafo):
@@ -107,7 +166,18 @@ def diametro(dist):
 
 if __name__ == "__main__":
     # Ler o grafo do input
-    grafo = ler_grafo_input()
+   
+    caminho_arquivo = input("Informe o caminho do arquivo .dat para leitura do grafo: ")
+    resultado = ler_arquivo(caminho_arquivo)
+    vertices, arestas, arcos, vertices_req, arestas_req, arcos_req = resultado
+    grafo = {v: [] for v in vertices}
+    
+    for (u, v), _ in arestas:
+        grafo[u].append(v)
+        grafo[v].append(u)
+        
+    for (u, v), _ in arcos:
+        grafo[u].append(v)
 
     # Calcular estatísticas
     print("\n### Estatísticas do Grafo ###")
@@ -133,3 +203,4 @@ if __name__ == "__main__":
     # Calcular caminho médio e diâmetro
     print(f"\nCaminho médio: {caminho_medio(dist):.4f}")
     print(f"Diâmetro do grafo: {diametro(dist)}")
+   

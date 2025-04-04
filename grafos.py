@@ -9,25 +9,25 @@ class Grafo:
         self.arestas = 0
         self.arcos = 0
 
-    def adicionar_aresta(self, u, v, peso=1, direcionado=False):
+    def adicionar_aresta(self, u, v, peso=1, bidirecional=True):
         self.matriz[u][v] = peso
-        self.arestas += 1
-        if not direcionado:
+        if bidirecional:
             self.matriz[v][u] = peso  # Grafo não direcionado
+            self.arestas += 1  # Incrementa arestas para grafos não direcionados
         else:
-            self.arcos += 1
+            self.arcos += 1  # Incrementa arcos para grafos direcionados
 
 
-def ler_grafo_input(direcionado=False):
+def ler_grafo_input():
     n = int(input("Digite o número de vértices: "))  # Lê a quantidade de vértices
     grafo = Grafo(n)
 
     m = int(input("Digite o número de arestas/arcos: "))  # Lê a quantidade de arestas ou arcos
 
-    print("Digite as arestas/arcos no formato: u v peso")
+    print("Digite as arestas/arcos no formato: u v peso bidirecional (1 para sim, 0 para não)")
     for _ in range(m):
-        u, v, peso = map(int, input().split())
-        grafo.adicionar_aresta(u, v, peso, direcionado)
+        u, v, peso, bidirecional = map(int, input().split())
+        grafo.adicionar_aresta(u, v, peso, bidirecional == 1)
 
     return grafo
 
@@ -45,7 +45,10 @@ def qtd_arcos(grafo):
 
 
 def densidade(grafo):
-    return (2 * grafo.arestas) / (grafo.n * (grafo.n - 1))
+    if grafo.arcos > 0:  # Grafo direcionado
+        return grafo.arcos / (grafo.n * (grafo.n - 1))
+    else:  # Grafo não direcionado
+        return (2 * grafo.arestas) / (grafo.n * (grafo.n - 1))
 
 
 def componentes_conectados(grafo):
@@ -98,11 +101,13 @@ def caminho_medio(dist):
 
 
 def diametro(dist):
-    return np.max(dist[dist != float('inf')])
+    if np.any(dist == float('inf')):  # Verifica se há distâncias infinitas
+        return float('inf')  # Retorna infinito se o grafo for desconectado
+    return np.max(dist[dist != float('inf')])  # Caso contrário, retorna o maior valor finito
 
 if __name__ == "__main__":
     # Ler o grafo do input
-    grafo = ler_grafo_input(direcionado=False)
+    grafo = ler_grafo_input()
 
     # Calcular estatísticas
     print("\n### Estatísticas do Grafo ###")

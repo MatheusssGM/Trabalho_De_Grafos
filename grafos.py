@@ -113,18 +113,6 @@ def calcular_graus(vertices, arestas, arcos):
     return tuple((v, tuple(g)) for v, g in graus.items())
 
 def imprimir_graus(graus):
-    grau_arestas_min = min(g[1][0] for g in graus)
-    grau_arestas_max = max(g[1][0] for g in graus)
-    print(f"Grau mínimo/máximo (arestas): {grau_arestas_min}/{grau_arestas_max}")
-
-    grau_entrada_min = min(g[1][1] for g in graus)
-    grau_entrada_max = max(g[1][1] for g in graus)
-    print(f"Grau de entrada mínimo/máximo (arcos): {grau_entrada_min}/{grau_entrada_max}")
-
-    grau_saida_min = min(g[1][2] for g in graus)
-    grau_saida_max = max(g[1][2] for g in graus)
-    print(f"Grau de saída mínimo/máximo (arcos): {grau_saida_min}/{grau_saida_max}")
-
     grau_total_min = min(sum(g[1]) for g in graus)
     grau_total_max = max(sum(g[1]) for g in graus)
     print(f"Grau total mínimo/máximo: {grau_total_min}/{grau_total_max}")
@@ -156,16 +144,14 @@ def floyd_warshall(vertices, arestas, arcos):
         predecessores[u][v] = u
 
     # Aplica o algoritmo de Floyd-Warshall
-    print("Iniciando Floyd-Warshall...")
+
     for k in vertices:
-        print(f"Processando vértice intermediário: {k}")
         for i in vertices:
             for j in vertices:
                 if distancias[i][j] > distancias[i][k] + distancias[k][j]:
                     distancias[i][j] = distancias[i][k] + distancias[k][j]
                     predecessores[i][j] = predecessores[k][j]
 
-    print("Floyd-Warshall concluído.")
     return distancias, predecessores
 
 def montar_matriz_distancias(vertices, arestas, arcos):
@@ -202,12 +188,11 @@ def calcular_caminho_medio(num_vertices, matriz_dist):
         for valor in linha.values():
             if valor < float('inf'):
                 soma += valor
-                count += 1
-    return soma / count if count > 0 else float('inf')
+
+    return soma / (num_vertices*(num_vertices-1))
 
 def calcular_intermediacao(vertices, matriz_pred):
     intermediacao = {v: 0 for v in vertices}
-    print("Calculando intermediação...")
     for origem in vertices:
         for destino in vertices:
             if origem != destino:
@@ -215,11 +200,9 @@ def calcular_intermediacao(vertices, matriz_pred):
                 if len(caminho) > 1:  # Verifica se existe um caminho válido
                     for v in caminho[1:-1]:  # Exclui origem e destino
                         intermediacao[v] += 1
-    print("Intermediação calculada com sucesso.")
     return intermediacao
 
 def exibir_metricas(vertices, arestas, arcos, vertices_req, arestas_req, arcos_req):
-    print("Calculando métricas do grafo...")
     try:
         validar_grafo(vertices, arestas, arcos)
 
@@ -249,7 +232,7 @@ def exibir_metricas(vertices, arestas, arcos, vertices_req, arestas_req, arcos_r
 
         print("Intermediação por vértice:")
         for v, valor in intermediacao.items():
-            print(f"  Vértice {v}: {valor}")
+            print(f"  Vértice ({v}): {valor}")
     except Exception as e:
         print(f"Erro ao calcular métricas: {e}")
         exit()

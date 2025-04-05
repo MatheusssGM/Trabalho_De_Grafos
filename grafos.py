@@ -1,11 +1,9 @@
-import numpy as np
-
-def ler_arquivo(caminho_arquivo):
+def leitor_arquivo(path):
     try:
-        with open(caminho_arquivo, "r", encoding="utf-8") as arquivo:
+        with open(path, "r", encoding="utf-8") as arquivo:
             linhas = arquivo.readlines()
     except FileNotFoundError:
-        print(f"Erro: Arquivo '{caminho_arquivo}' não encontrado.")
+        print(f"Erro: Arquivo '{path}' não encontrado.")
         exit()
     except Exception as e:
         print(f"Erro ao ler o arquivo: {e}")
@@ -86,6 +84,7 @@ def ler_arquivo(caminho_arquivo):
 
     return vertices, arestas, arcos, vertices_requeridos, arestas_requeridas, arcos_requeridos
 
+
 def validar_grafo(vertices, arestas, arcos):
     for (u, v), _ in arestas:
         if u not in vertices or v not in vertices:
@@ -98,6 +97,7 @@ def validar_grafo(vertices, arestas, arcos):
             exit()
 
     print("Grafo validado com sucesso.")
+
 
 def calcular_graus(vertices, arestas, arcos):
     graus = {v: [0, 0, 0] for v in vertices}  # [grau, entrada, saída]
@@ -112,15 +112,26 @@ def calcular_graus(vertices, arestas, arcos):
 
     return tuple((v, tuple(g)) for v, g in graus.items())
 
+
 def imprimir_graus(graus):
-    grau_total_min = min(sum(g[1]) for g in graus)
-    grau_total_max = max(sum(g[1]) for g in graus)
-    print(f"Grau total mínimo/máximo: {grau_total_min}/{grau_total_max}")
+    grau_min = min(sum(g[1]) for g in graus)
+    grau_max = max(sum(g[1]) for g in graus)
+    print(f"Grau mínimo: {grau_min}")
+    print(f"Grau máximo: {grau_max}")
+
 
 def calcular_densidade(num_vertices, num_arestas, num_arcos):
-    max_arestas = (num_vertices * (num_vertices - 1)) / 2
-    max_arcos = num_vertices * (num_vertices - 1)
-    return (num_arestas + num_arcos) / (max_arestas + max_arcos)
+    arestasT = (num_vertices * (num_vertices - 1)) / 2
+    arcosT = num_vertices * (num_vertices - 1)
+    if num_vertices < 2:  # Densidade não definida para menos de 2 vértices
+        return 0
+    if arestasT == 0 or arcosT == 0:  # Densidade não definida para arestas ou arcos zero
+        return 0
+    if num_arestas > arestasT or num_arcos > arcosT:  # Limite de arestas e arcos
+        print("Erro: O número de arestas ou arcos excede o máximo permitido.")
+        exit()
+    return (num_arestas + num_arcos) / (arestasT + arcosT)
+
 
 def floyd_warshall(vertices, arestas, arcos):
     # Inicializa as matrizes de distâncias e predecessores
@@ -154,13 +165,16 @@ def floyd_warshall(vertices, arestas, arcos):
 
     return distancias, predecessores
 
-def montar_matriz_distancias(vertices, arestas, arcos):
+
+def criar_matriz_distancias(vertices, arestas, arcos):
     distancias, _ = floyd_warshall(vertices, arestas, arcos)
     return distancias
 
-def montar_matriz_predecessores(vertices, arestas, arcos):
+
+def criar_matriz_predecessores(vertices, arestas, arcos):
     _, predecessores = floyd_warshall(vertices, arestas, arcos)
     return predecessores
+
 
 def caminho_minimo(matriz_pred, origem, destino):
     caminho = []
@@ -174,12 +188,14 @@ def caminho_minimo(matriz_pred, origem, destino):
         return []  # Retorna um caminho vazio se não houver conexão
     return caminho
 
+
 def calcular_diametro(matriz_dist):
     diametro = 0
     for d in matriz_dist.values():
         max_dist = max(v for v in d.values() if v < float('inf'))
         diametro = max(diametro, max_dist)
     return diametro
+
 
 def calcular_caminho_medio(num_vertices, matriz_dist):
     soma = 0
@@ -189,7 +205,8 @@ def calcular_caminho_medio(num_vertices, matriz_dist):
             if valor < float('inf'):
                 soma += valor
 
-    return soma / (num_vertices*(num_vertices-1))
+    return soma / (num_vertices * (num_vertices - 1))
+
 
 def calcular_intermediacao(vertices, matriz_pred):
     intermediacao = {v: 0 for v in vertices}
@@ -202,15 +219,23 @@ def calcular_intermediacao(vertices, matriz_pred):
                         intermediacao[v] += 1
     return intermediacao
 
-def exibir_metricas(vertices, arestas, arcos, vertices_req, arestas_req, arcos_req):
+
+def exibirDados(vertices, arestas, arcos, vertices_req, arestas_req, arcos_req):
     try:
         validar_grafo(vertices, arestas, arcos)
+        print("**** Dados do Grafo ****")
+        print(f"Total de vértices: {len(vertices)}")
+        print(f"Total de arestas: {len(arestas)}")
+        print(f"Total de arcos: {len(arcos)}")
+        print(f"Vértices requeridos: {len(vertices_req)}")
+        print(f"Arestas requeridas: {len(arestas_req)}")
+        print(f"Arcos requeridos: {len(arcos_req)}")
 
         densidade = calcular_densidade(len(vertices), len(arestas), len(arcos))
         print(f"Densidade do grafo: {densidade:.4f}")
 
-        matriz_dist = montar_matriz_distancias(vertices, arestas, arcos)
-        matriz_pred = montar_matriz_predecessores(vertices, arestas, arcos)
+        matriz_dist = criar_matriz_distancias(vertices, arestas, arcos)
+        matriz_pred = criar_matriz_predecessores(vertices, arestas, arcos)
 
         diametro = calcular_diametro(matriz_dist)
         print(f"Diâmetro do grafo: {diametro}")
@@ -221,26 +246,22 @@ def exibir_metricas(vertices, arestas, arcos, vertices_req, arestas_req, arcos_r
         intermediacao = calcular_intermediacao(vertices, matriz_pred)
         graus = calcular_graus(vertices, arestas, arcos)
 
-        print(f"Total de vértices: {len(vertices)}")
-        print(f"Total de arestas: {len(arestas)}")
-        print(f"Total de arcos: {len(arcos)}")
-        print(f"Vértices requeridos: {len(vertices_req)}")
-        print(f"Arestas requeridas: {len(arestas_req)}")
-        print(f"Arcos requeridos: {len(arcos_req)}")
-
         imprimir_graus(graus)
-
-        print("Intermediação por vértice:")
+        print("                             ")
+        print("**** Intermediação por vértice ****")
         for v, valor in intermediacao.items():
-            print(f"  Vértice ({v}): {valor}")
+            print(f"Vértice ({v}): {valor}")
     except Exception as e:
         print(f"Erro ao calcular métricas: {e}")
         exit()
 
-# Execução principal
+
+# Main Frame
 try:
-    caminho_arquivo = input("Informe o caminho do arquivo .dat para leitura do grafo: ")
-    vertices, arestas, arcos, vertices_req, arestas_req, arcos_req = ler_arquivo(caminho_arquivo)
-    exibir_metricas(vertices, arestas, arcos, vertices_req, arestas_req, arcos_req)
+    path = input("Informe o caminho do arquivo .dat para leitura do grafo: ")
+    if not path.endswith(".dat"):
+        raise ValueError("O arquivo deve ter a extensão .dat.")
+    vertices, arestas, arcos, vertices_req, arestas_req, arcos_req = leitor_arquivo(path)
+    exibirDados(vertices, arestas, arcos, vertices_req, arestas_req, arcos_req)
 except Exception as e:
     print(f"Erro durante a execução: {e}")

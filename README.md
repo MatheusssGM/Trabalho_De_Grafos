@@ -1,6 +1,6 @@
 
 # 🔍 Análise de Grafos - Etapa 1  
-**Autor:** Arthur Soares Marques  
+**Autores:** Arthur Soares Marques , Matheus Gomes Monteiro 
 **Curso:** Ciência da Computação - Universidade Federal de Lavras (UFLA)  
 
 ## 📌 Descrição

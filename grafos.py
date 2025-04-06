@@ -1,3 +1,12 @@
+#*******************************************************************#
+
+                #PROJETO DE ALGORITMOS EM GRAFOS#
+            
+   #Alunos: Arthur Soares Marques , Matheus Gomes Monteiro#
+
+#*******************************************************************#
+
+
 def leitor_arquivo(path):
     try:
         with open(path, "r", encoding="utf-8") as arquivo:
@@ -99,18 +108,18 @@ def validar_grafo(vertices, arestas, arcos):
     print("Grafo validado com sucesso.")
 
 
-def calcular_graus(vertices, arestas, arcos):
-    graus = {v: [0, 0, 0] for v in vertices}  # [grau, entrada, saída]
+def calcula_graus(vertices, arestas, arcos):
+    grausT = {v: [0, 0, 0] for v in vertices}  # [grau, entrada, saída]
 
     for (u, v), _ in arestas:
-        graus[u][0] += 1
-        graus[v][0] += 1
+        grausT[u][0] += 1
+        grausT[v][0] += 1
 
     for (u, v), _ in arcos:
-        graus[u][2] += 1  # saída
-        graus[v][1] += 1  # entrada
+        grausT[u][2] += 1  # saída
+        grausT[v][1] += 1  # entrada
 
-    return tuple((v, tuple(g)) for v, g in graus.items())
+    return tuple((v, tuple(g)) for v, g in grausT.items())
 
 
 def imprimir_graus(graus):
@@ -192,8 +201,8 @@ def caminho_minimo(matriz_pred, origem, destino):
 def calcular_diametro(matriz_dist):
     diametro = 0
     for d in matriz_dist.values():
-        max_dist = max(v for v in d.values() if v < float('inf'))
-        diametro = max(diametro, max_dist)
+        dist_max = max(v for v in d.values() if v < float('inf'))
+        diametro = max(diametro, dist_max)
     return diametro
 
 
@@ -223,6 +232,7 @@ def calcular_intermediacao(vertices, matriz_pred):
 def exibirDados(vertices, arestas, arcos, vertices_req, arestas_req, arcos_req):
     try:
         validar_grafo(vertices, arestas, arcos)
+        print("                             ")
         print("**** Dados do Grafo ****")
         print(f"Total de vértices: {len(vertices)}")
         print(f"Total de arestas: {len(arestas)}")
@@ -244,7 +254,7 @@ def exibirDados(vertices, arestas, arcos, vertices_req, arestas_req, arcos_req):
         print(f"Caminho médio: {caminho_medio:.4f}")
 
         intermediacao = calcular_intermediacao(vertices, matriz_pred)
-        graus = calcular_graus(vertices, arestas, arcos)
+        graus = calcula_graus(vertices, arestas, arcos)
 
         imprimir_graus(graus)
         print("                             ")

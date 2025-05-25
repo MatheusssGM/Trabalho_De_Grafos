@@ -11,6 +11,13 @@ from leitor_grafo import (
     criar_matriz_distancias
 )
 
+
+
+
+
+
+
+
 def extrair_numero(nome):
     numeros = re.findall(r'\d+', nome)
     return int(numeros[0]) if numeros else float('inf')
